@@ -359,7 +359,7 @@ public class Lightning : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log("NodeOverlap");
+                        //Debug.Log("NodeOverlap");
                     }
                 }
             }
