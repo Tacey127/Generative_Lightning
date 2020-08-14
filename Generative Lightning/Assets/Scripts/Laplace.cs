@@ -16,7 +16,6 @@ public class Laplace : MonoBehaviour
 
     //**************************************************************************************Editor Variables
 
-    [SerializeField] NewChargePoint lightningNode = null;//the node
     [SerializeField] List<NewChargePoint> candidateCharges = new List<NewChargePoint>();
 
     [Tooltip("The physical length of a grid cell")]
@@ -24,7 +23,6 @@ public class Laplace : MonoBehaviour
     [SerializeField] float h = 1;//the physical length of a grid cell
     [Space]
 
-    //private, following this https://answers.unity.com/questions/1365178/serialization-of-an-enum-array.html
     [Header("Lightning Generation Varients")]
     [SerializeField] private GenerationTypes genType = GenerationTypes.SemiSphere;
 
@@ -55,13 +53,13 @@ public class Laplace : MonoBehaviour
             StepTwo(chosenNode);
             StepThree(chosenNode);
             numberSpawned++;
-            Debug.Log(chosenNode.transform.localPosition);
             StepFour(chosenNode);
         }
-
     }
 
-    void InitiateLaplace()
+    #region Init
+
+    public void InitiateLaplace()
     {
 
         //calculate boundary constants
@@ -69,8 +67,7 @@ public class Laplace : MonoBehaviour
 
         //spawn initial charge
         collisionPositions.Add(new Vector3(0, 0, 0));
-        NewChargePoint startingCharge = new NewChargePoint();
-
+        NewChargePoint startingCharge = ScriptableObject.CreateInstance<NewChargePoint>();
 
         startingCharge.potential = 26;//according to the reference material, 26 for the spawned charge, -1 for the other charges
         //changed to 17 to prevent upwards lightning
@@ -105,11 +102,10 @@ public class Laplace : MonoBehaviour
                     if (newPointPosition != checkPos)
                     {
                         Vector3 pos = checkPos + gameObject.transform.position;
-                        NewChargePoint newCharge = Instantiate(lightningNode, pos, Quaternion.identity, transform).GetComponent<NewChargePoint>();
+                        NewChargePoint newCharge = ScriptableObject.CreateInstance<NewChargePoint>();
                         newCharge.chargePointRelativePosition = checkPos;
                         collisionPositions.Add(new Vector3(i - 1, j - 1, k - 1));
                         newCharges.Add(newCharge);
-                        newCharge.potential = -1;
                         newCharge.parentCharge = spawnCharge;
                     }
                 }
@@ -117,6 +113,10 @@ public class Laplace : MonoBehaviour
         }
         StepFive(newCharges);
     }
+
+    #endregion Init
+
+    #region LaplaceSteps
 
     //Step 1 - normalise and weigh all nodes, then randomly select one according to a weighting
     //http://gamma.cs.unc.edu/FRAC/laplacian_large.pdf
@@ -192,7 +192,7 @@ public class Laplace : MonoBehaviour
     void StepFour(NewChargePoint chosenNode)
     {
         //get the recent spawned charge position
-        Vector3 newPointPosition = chosenNode.transform.localPosition;
+        Vector3 newPointPosition = chosenNode.chargePointRelativePosition;
         Debug.Log(newPointPosition);
 
         //add charges based on a 3x3x3 octant
@@ -214,7 +214,7 @@ public class Laplace : MonoBehaviour
                     if (!collisionPositions.Contains(checkPos))
                     {
                         Vector3 pos = checkPos + gameObject.transform.position;
-                        NewChargePoint newCharge = new NewChargePoint();
+                        NewChargePoint newCharge = ScriptableObject.CreateInstance<NewChargePoint>();
                         newCharge.chargePointRelativePosition = checkPos;
                         collisionPositions.Add(new Vector3(i - 1, j - 1, k - 1) + newPointPosition);
                         newCharges.Add(newCharge);
@@ -252,4 +252,6 @@ public class Laplace : MonoBehaviour
 
         candidateCharges.AddRange(newCharges);
     }
+
+    #endregion LaplaceSteps
 }
