@@ -5,7 +5,6 @@ using System;
 
 public class Laplace : MonoBehaviour
 {
-    //**************************************************************************************Generation Type Classes
     [Serializable]
     public enum GenerationTypes
     {
@@ -14,7 +13,7 @@ public class Laplace : MonoBehaviour
         BranchingRotation
     };
 
-    //**************************************************************************************Editor Variables
+    [SerializeField] LaplaceRender laplaceRender;
 
     [SerializeField] List<NewChargePoint> candidateCharges = new List<NewChargePoint>();
 
@@ -30,10 +29,12 @@ public class Laplace : MonoBehaviour
     [SerializeField]List<Vector3> collisionPositions = new List<Vector3>();
     List<NewChargePoint> spawnedCharges = new List<NewChargePoint>();
 
+    NewChargePoint hitNode = null;
+
     //the boundary constants
     float ROne = -1;
 
-    void RunLaplace()
+    public NewChargePoint RunLaplace()
     {
         int numberSpawned = 0;
 
@@ -50,11 +51,18 @@ public class Laplace : MonoBehaviour
         if (numberSpawned < maxNumberspawned)
         {
             NewChargePoint chosenNode = StepOne();
-            StepTwo(chosenNode);
+            chosenNode = StepTwo(chosenNode);
             StepThree(chosenNode);
             numberSpawned++;
             StepFour(chosenNode);
         }
+
+        return hitNode;
+    }
+
+    public void RenderLaplace() 
+    {
+        laplaceRender.RenderFromNode(hitNode);
     }
 
     #region Init
@@ -173,8 +181,13 @@ public class Laplace : MonoBehaviour
         //change the node to completed node
         spawnedCharges.Add(newNode);
 
-        //visualisation
-
+        //spawncheck
+        Collider[] hitCheck = Physics.OverlapSphere(newNode.chargePointRelativePosition + transform.position, .5f);
+        if(hitCheck.Length > 0)
+        {
+            Debug.Log(hitCheck.Length);
+            hitNode = newNode;
+        }
 
         return newNode;
     }
@@ -193,7 +206,6 @@ public class Laplace : MonoBehaviour
     {
         //get the recent spawned charge position
         Vector3 newPointPosition = chosenNode.chargePointRelativePosition;
-        Debug.Log(newPointPosition);
 
         //add charges based on a 3x3x3 octant
         List<NewChargePoint> newCharges = new List<NewChargePoint>();
@@ -219,10 +231,8 @@ public class Laplace : MonoBehaviour
                         collisionPositions.Add(new Vector3(i - 1, j - 1, k - 1) + newPointPosition);
                         newCharges.Add(newCharge);
                         newCharge.parentCharge = chosenNode;
-                    }
-                    else
-                    {
-                        Debug.Log("NodeOverlap");
+
+
                     }
                 }
             }

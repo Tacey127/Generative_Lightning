@@ -5,12 +5,45 @@ using UnityEngine;
 public class LaplaceHandler : MonoBehaviour
 {
     [SerializeField] Laplace laplace;
+    bool initialised = false;
 
     public void Initiate()
     {
-        laplace.InitiateLaplace();
+        if(!initialised)
+        {
+            laplace.InitiateLaplace();
+            initialised = true;
+        }
+        else
+        {
+            Debug.Log("InitiateLaplace already called");
+        }
+    }
 
-        Debug.Log("and working!");
+    public void IterateLaplace()
+    {
+        if(initialised)
+        {
+            laplace.RunLaplace();
+        }
+        else
+        {
+            Debug.Log("InitiateLaplace required for Laplace to function properly");
+        }
+    }
+
+    public void RunLaplace()
+    {
+        if (initialised)
+        {
+            while(!laplace.RunLaplace());
+            Debug.Log("finished");
+            laplace.RenderLaplace();
+        }
+        else
+        {
+            Debug.Log("InitiateLaplace required for Laplace to function properly");
+        }
     }
 
 }

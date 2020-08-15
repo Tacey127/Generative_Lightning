@@ -6,13 +6,30 @@ using UnityEngine;
 [CustomEditor(typeof(LaplaceHandler))]
 public class LaplaceHandlerInspector : Editor
 {
+    LaplaceHandler handler;
+
+
+    private void OnEnable()
+    {
+        handler = (LaplaceHandler)target;
+    }
+
     public override void OnInspectorGUI()
     {
         if (GUILayout.Button("Initialise"))
         {
-            Debug.Log("It's alive: " + target.name);
-            LaplaceHandler handler = (LaplaceHandler)target;
             handler.Initiate();
         }
+
+        if (GUILayout.Button("Iterate Laplace Once"))
+        {
+            handler.IterateLaplace();
+        }
+
+        if (GUILayout.Button("Run Laplace"))
+        {
+            handler.RunLaplace();
+        }
+
     }
 }
